@@ -3,8 +3,8 @@ import re
 from flask import Flask, jsonify, render_template, request
 
 from cs50 import SQL
-from helpers import lookup
 import sqlite3
+import websiteconfig
 
 import json
 import collections
@@ -16,6 +16,7 @@ import pymysql.cursors
 
 # Configure application
 app = Flask(__name__)
+app.api_key = websiteconfig.API_KEY
 
 # Configure CS50 Library to use SQLite database
 db = SQL("sqlite:///database.db")
@@ -47,10 +48,10 @@ def after_request(response):
 @app.route("/")
 def index():
     """Render map"""
-    if not os.environ.get("API_KEY"):
-        raise RuntimeError("API_KEY not set")
-    return render_template("index.html", key=os.environ.get("API_KEY"))
-
+    #if not os.environ.get("API_KEY"):
+    #    raise RuntimeError("API_KEY not set")
+    #return render_template("index.html", key=os.environ.get("API_KEY"))
+    return render_template("index.html", key=app.api_key)
 
 
 @app.route("/articles")
