@@ -1,0 +1,37 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Mileage Calculation
+{% endblock %}
+
+{% block main %}
+
+    <main class="container p-5">
+
+        {{ airportstring }}
+        <br>
+        {{ airlinestring }}
+        <br>&nbsp
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Program Name</th>
+                    <th>Miles Required</th>
+                </tr>
+            </thead>
+
+
+            <tbody>
+                {% for program in programs %}
+                <tr>
+                    <td>{{ program['programname'] }}</td>
+                    <td>{{ program['miles'] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <br>
+        <i>Note: It is normal for most values to be n/a</i>
+    </main>
+
+{% endblock %}
