@@ -14,8 +14,8 @@ import pandas as pd
 import pymysql
 import pymysql.cursors
 
-# Configure application
-app = Flask(__name__)
+# Configure app
+application = app = Flask(__name__)
 app.api_key = websiteconfig.API_KEY
 
 # Configure CS50 Library to use SQLite database
@@ -35,6 +35,11 @@ conn = pymysql.connect(host, user=user,port=port,passwd=password, db=dbname, aut
 
 # export API_KEY=AIzaSyB_5erBSxNPAMdDOtl0PucoNDuexof2i0U
 # https://developers.google.com/maps/web/
+
+# run the app.
+if __name__ == '__main__':
+    app.run(host='0.0.0.0',port=8080,debug=True)
+
 
 # Ensure responses aren't cached
 @app.after_request
