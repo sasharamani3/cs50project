@@ -1,10 +1,9 @@
 // Google Map
 let map;
 
-// Markers for map
+// Markers for map. Important to know that 'connectingmarkers' are different than 'markers'
 let markers = [];
 let connectingmarkers = [];
-
 
 let connectionmode = false;
 
@@ -71,6 +70,7 @@ $(document).ready(function() {
 });
 
 
+
 // Add marker for place to map
 function addMarker(place) {
 
@@ -85,9 +85,7 @@ function addMarker(place) {
         labelOrigin: new google.maps.Point(16, 64),
         label: {
             text: place.IATA_Code
-
         }
-
     });
 
 
@@ -96,7 +94,7 @@ function addMarker(place) {
 
         info.setContent("Loading..."); //Temp message until the rest loads
 
-
+        //Display the details of the airport
         var contentString = '<b>' + place.Airport_Name + '</b>';
         contentString = contentString + '<br><b>IATA Code:</b> ' + place.IATA_Code + '';
         contentString = contentString + '<br><b>Serves:</b> ' + place.Serves + '';
@@ -107,7 +105,7 @@ function addMarker(place) {
 
         if (connectionmode == false) {
             showroutes(place);
-        }
+        };
     });
 
     markers.push(marker);
@@ -135,13 +133,18 @@ function showroutes(place) {
         addMarker(place);
         // Add connecting markers to map
         for (let i = 0; i < data.length; i++) {
-            addConnectingMarker(data[i]);
+            addConnectingMarker(data[i]);   //'Connecting markers' are different from regular markers
         }
 
         if (map.zoom > 5) {
             map.setZoom(5);
         }
-        document.getElementById("removeconnections").style.visibility = "visible"
+
+        document.getElementById("removeconnections").style.visibility = "visible";
+        document.getElementById("star").disabled = true;
+        document.getElementById("ow").disabled = true;
+        document.getElementById("sky").disabled = true;
+
     });
 
 }
@@ -180,12 +183,14 @@ function addConnectingMarker(place) {
         var f = document.getElementById("class");
         var classstring = f.options[f.selectedIndex].text;
 
+        //For a connecting marker, we want to add details about the airlines that connect it to the origin marker
+        //There is also the option to calculate the # of frequent flyer miles required to fly between the airports: either for a specific airline, or for ALL the airlines together
         var contentString = '<b>' + place.airport_name + '</b>';
-        contentString = contentString + '<br><b>IATA Code:</b> ' + place.connairportiata + '';
+        contentString = contentString + '<br><b>IATA Code:</b> ' + place.connairportiata  + '';
         contentString = contentString + '<br><b>Serves:</b> ' + place.serves + '';
         contentString = contentString + '<br><b>Location:</b> ' + place.location + '';
         contentString = contentString + '<br>';
-        contentString = contentString + '<br><b>Connecting Airlines:</b>';
+        contentString = contentString + '<br><b>Connecting Airlines: <a class="nav-link" href="/calcmiles?airportid1=' + place.originairportid + '&airportid2=' + place.connairportid + '&airlineid=' + 0 + '&directionality=' + directionalitystring + '&travelclass=' + classstring + '&traveldate=' + document.getElementById("traveldate").value + '" target="_blank">(Load All)</a></b>';
 
         let parameters = {
             airport1: place.originairportid,
@@ -201,9 +206,7 @@ function addConnectingMarker(place) {
             // Add connecting markers to map
             for (let i = 0; i < data.length; i++) {
                 contentString = contentString + '<br><a class="nav-link" href="/calcmiles?airportid1=' + place.originairportid + '&airportid2=' + place.connairportid + '&airlineid=' + data[i].airlineid + '&directionality=' + directionalitystring + '&travelclass=' + classstring + '&traveldate=' + document.getElementById("traveldate").value + '" target="_blank">' + data[i].airline_brand + ' (' + data[i].iata_designator + ')</a>';
-                //contentString = contentString + '<br><a class="nav-link" href="/calcmiles?airportid1=' + place.originairportid + '&airportid2=' + place.connairportid + '&airlineid=' + data[i].airlineid + '" target="_blank">' + data[i].airline_brand + ' (' + data[i].iata_designator + ')</a>';
             }
-
 
             contentString = contentString + '<br><br>';
             contentString = contentString + '<i>Click on airlines above to see mileage requirements</i>';
@@ -245,7 +248,10 @@ function clearconnections() {
     connectingmarkers = [];
 
     connectionmode = false;
-    document.getElementById("removeconnections").style.visibility = "hidden"
+    document.getElementById("removeconnections").style.visibility = "hidden";
+    document.getElementById("star").disabled = false;
+    document.getElementById("ow").disabled = false;
+    document.getElementById("sky").disabled = false;
 
     update();
 }
@@ -298,6 +304,14 @@ function configure() {
 
         });
 
+        if (connectionmode == false) {
+            showroutes(suggestion);
+
+        } else {
+            new google.maps.event.trigger(connectingmarkers[getconnairportid(suggestion.IATA_Code)], 'click');
+
+        }
+
         // Update UI
         update();
     });
@@ -331,7 +345,7 @@ function removeMarkers() {
     }
 
     //Empty the array
-    markers = []
+    markers = [];
 }
 
 
@@ -347,29 +361,8 @@ function search(query, syncResults, asyncResults) {
         asyncResults(data);
 
         map.setZoom(11);
+
     });
-}
-
-
-// Show info window at marker with content
-function showInfo(marker, content) {
-    // Start div
-    let div = "<div id='info'>";
-    if (typeof(content) == "undefined") {
-        // http://www.ajaxload.info/
-        div += "<img alt='loading' src='/static/ajax-loader.gif'/>";
-    } else {
-        div += content;
-    }
-
-    // End div
-    div += "</div>";
-
-    // Set info window's content
-    info.setContent(div);
-
-    // Open info window (if not already open)
-    info.open(map, marker);
 }
 
 
@@ -398,5 +391,16 @@ function update() {
                 addMarker(data[i]);
             }
         });
-    };
+    }
+}
+
+function getconnairportid(airportiata) {
+
+    for (let i = 0; i < connectingmarkers.length; i++) {
+
+        if (airportiata == connectingmarkers[i].label.text)
+        {
+            return i;
+        }
+    }
 }

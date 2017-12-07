@@ -11,21 +11,34 @@
         {{ airportstring }}
         <br>
         {{ airlinestring }}
+
+
         <br>&nbsp
         <table class="table table-striped">
             <thead>
                 <tr>
                     <th>Program Name</th>
-                    <th>Miles Required</th>
+
+                    {% for airline in thetable %}
+                        <th>{{ airline['airline'] }}</th>
+                    {% endfor %}
                 </tr>
             </thead>
 
 
             <tbody>
-                {% for program in programs %}
+                {% for program in thetable[0]['mileage'] %}
                 <tr>
                     <td>{{ program['programname'] }}</td>
-                    <td>{{ program['miles'] }}</td>
+
+                    {% for airline in thetable %}
+                        {% for mileagedict in airline['mileage'] %}
+                            {% if mileagedict['programname'] == program['programname'] %}
+                            <td>{{ mileagedict['miles'] }}</td>
+                            {% endif %}
+                        {% endfor %}
+                    {% endfor %}
+
                 </tr>
                 {% endfor %}
             </tbody>
